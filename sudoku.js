@@ -1,6 +1,7 @@
 /* TODO: Turn this into a class, only exposing a few methods, checking for proper array size and exposing a solve() method */
 /* TODO: Allow a user to enter the matrix directly and show only ONE solution or the possibles array */
 /* TODO: Extend Array so I can call uniques, union and intersection natively. (Do I need to make the solution more general and not Integer specific? (Rethink this one) */
+//TODO: cleanup entire file
 
 function uniques(yourArray) {
 	uniq = {};
@@ -180,6 +181,39 @@ function possiblesEqual(first, second) {
 	return (cellToString(first) == cellToString(second));
 }
 
+/* when we have a naked subset solve, we have to clear the row, column and block */
+function nsSolve(row, col, num) {
+	//go across the row and remove this number from other cells in this row
+	for (var i = 0; i<9; i++) {
+		if (possibles[row][i].length > 1) {
+			idx = possibles[row][i].indexOf(num);
+			if (idx != -1) {
+				possibles[row][i].splice(idx, 1);
+				if (possibles[row][i].length == 1) {
+					possibles[row][i] = possibles[row][i][0]; //TODO: make the other possibles in this column/row/block fall in line
+					nsSolve(row, i, possibles[row][i]);
+				}		
+			}			
+		}
+	}
+
+	//go down the column and remove this number from other cells in this column
+	for (var i = 0; i<9; i++) {
+		if (possibles[i][col].length > 1) {
+			idx = possibles[i][col].indexOf(num);
+			if (idx != -1) {
+				possibles[i][col].splice(idx, 1);
+				if (possibles[i][col].length == 1) {
+					possibles[i][col] = possibles[i][col][0]; //TODO: make the other possibles in this column/row/block fall in line
+					nsSolve(i, col, possibles[i][col]);
+				}				
+			}				
+		}
+	}
+
+	//TODO: Get block information, clear adjoining cells in this block
+}
+
 function nakedSubset() {
 	/* if we have two cells that contain [1, 6] in a row or column, we can remove 1 and 6 from every possible array in that column (except the ones where 1 and 6 are the only options.) */
 	for (t = 0; t < 9; t++) {
@@ -202,6 +236,7 @@ function nakedSubset() {
 						}
 						if (possibles[t][i].length == 1) {
 							possibles[t][i] = possibles[t][i][0]; //TODO: make the other possibles in this column/row/block fall in line
+							nsSolve(t, i, possibles[t][i]);				
 						}
 					}
 				}
@@ -229,6 +264,8 @@ function nakedSubset() {
 						}
 						if (possibles[i][t].length == 1) {
 							possibles[i][t] = possibles[i][t][0]; //TODO: make the other possibles in this column/row/block fall in line
+							nsSolve(i, t, possibles[i][t][0]);
+							nsSolve(i, t, possibles[i][t]);		
 						}
 					}
 				}				

@@ -80,8 +80,12 @@
 		printArrayToTable(puzzle);
 		if (!moreSinglesInPossibles() && hasMorePossibles()) {
 			printArrayToTable(possibles, true);
+			/* find an end condition for nakedSubset() and make sure that I have a way to
+			  manage when I have more than one pair in a row - I need to determine how to figure that I have three pairs and two are the same. */
 			nakedSubset();
 		}
+
+		//TODO: A nice interface for entering puzzles
 	</script>
 </body>
 </html>
