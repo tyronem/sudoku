@@ -164,14 +164,27 @@ function possiblesEqual(first, second) {
 
 function nakedSubset() {
 	/* if we have two cells that contain [1, 6] in a row or column, we can remove 1 and 6 from every possible array in that column (except the ones where 1 and 6 are the only options.) */
-	d = possibles[1].filter(function (value) { return value.length == 2 && value.constructor == Array; });
+	for (t = 0; t < 9; t++) {
+		d = possibles[t].filter(function (value) { return value.length == 2 && value.constructor == Array; });
 
-	if (d.length == 2 && possiblesEqual(d[0], d[1])) {
-		a = possibles[1].filter(function (value) { return value.length > 2 && value.constructor == Array; });
-		for (i = 0 ; i < a.length; i++ ) {
-			/*	what to do? cycle through the whole row and use splice to delete one element at a time, then 
-			go through fillPossibles() and possiblesToSolve(). */
+		/* flaw: this works great if there are ONLY two cells with matching pairs in them. If you have three cells with pairs, this fails to process them. */
+		if (d.length == 2 && possiblesEqual(d[0], d[1])) {
 
+			for (i = 0 ; i < 9; i++ ) {
+				/*	what to do? cycle through the whole row and use splice to delete one element at a time, then 
+				go through fillPossibles() and possiblesToSolve(). */
+
+				if (possibles[t][i].constructor == Array && possibles[t][i].length >= 2) {
+					if (!possiblesEqual(d[0], possibles[t][i])) {
+						for (p = 0; p<2; p++) {
+							possibles[t][i].splice(possibles[t][i].indexOf(d[0][p]), 1);
+						}								
+					}
+				}
+			}
 		}
 	}
+
+	/* maybe try vertical naked subsets here */
+	printArrayToTable(possibles);
 }
