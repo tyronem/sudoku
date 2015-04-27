@@ -66,6 +66,14 @@ function sudokuColumn(c) {
 	return col;
 }
 
+function possiblesColumn(c) { 
+	col = [];
+	for (var i=0; i<9; i++) {
+		col.push(possibles[i][c]);
+	}
+	return col;
+}
+
 function sudokuBlock(c, r) {
 	//Give me all the numbers within whatever block we are in.
 	bottomRow = Math.floor(r/3.0) * 3;
@@ -109,6 +117,7 @@ function possiblesToSolve() {
 		for (var pj = 0; pj < 9; pj++) {
 			if (possibles[pi][pj].length == 1) {
 				puzzle[pi][pj] = possibles[pi][pj][0];
+				//possibles[pi][pj] = possibles[pi][pj][0];
 			}
 		}
 	}
@@ -136,13 +145,22 @@ function hasMorePossibles() {
 	return false;			
 }
 
-function printArrayToTable(arr) {
-	var $table = $( "<table></table>" );
+function printArrayToTable(arr, pagebreak) {
+	if (pagebreak != null && pagebreak != undefined) {
+		var $table = $( "<table class='pbb'></table>" );
+	} else {
+		var $table = $( "<table></table>" );
+	}
+
 	for (var pi = 0; pi < 9; pi++) {
 		var $line = $( "<tr></tr>" );
 		for (var pj = 0; pj < 9; pj++) {
-			if (arr[pi][pj].constructor == Number) {
-				$line.append( $( "<td></td>" ).html(arr[pi][pj]));
+			if (arr[pi][pj].constructor == Number) { 
+				if (arr[pi][pj] == 0) {
+					$line.append( $( "<td></td>" ).html("&nbsp;"));
+				} else {
+					$line.append( $( "<td></td>" ).html(arr[pi][pj]));
+				}
 			} else {
 				$line.append( $("<td></td>").html( "[" + arr[pi][pj].join(", ") + "]"));
 			}
@@ -177,14 +195,49 @@ function nakedSubset() {
 				if (possibles[t][i].constructor == Array && possibles[t][i].length >= 2) {
 					if (!possiblesEqual(d[0], possibles[t][i])) {
 						for (p = 0; p<2; p++) {
-							possibles[t][i].splice(possibles[t][i].indexOf(d[0][p]), 1);
-						}								
+							idx = possibles[t][i].indexOf(d[0][p]);
+							if (idx != -1) {
+								possibles[t][i].splice(idx, 1);
+							}				
+						}
+						if (possibles[t][i].length == 1) {
+							possibles[t][i] = possibles[t][i][0]; //TODO: make the other possibles in this column/row/block fall in line
+						}
 					}
 				}
 			}
 		}
 	}
 
-	/* maybe try vertical naked subsets here */
+	for (t = 0; t < 9; t++) {
+		console.log("column " + t);
+		d = possiblesColumn(t).filter(function (value) { return value.length == 2 && value.constructor == Array; });
+		// flaw: this works great if there are ONLY two cells with matching pairs in them. If you have three cells with pairs, this fails to process them.
+		if (d.length == 2 && possiblesEqual(d[0], d[1])) {
+			for (i = 0 ; i < 9; i++ ) {
+				console.log("i: " + i + " t: "  + t);
+				//	what to do? cycle through each cell in the column and use splice to delete one element at a time, then go through fillPossibles() and possiblesToSolve(). 
+				if (possibles[i][t].constructor == Array && possibles[i][t].length >= 2) {
+					if (!possiblesEqual(d[0], possibles[i][t])) {
+						for (p = 0; p<2; p++) {
+							console.log("Remove " + d[0][p] + " from " + possibles[i][t]);
+							idx = possibles[i][t].indexOf(d[0][p]);
+							if (idx != -1) {
+								possibles[i][t].splice(idx, 1);
+							}
+							
+						}
+						if (possibles[i][t].length == 1) {
+							possibles[i][t] = possibles[i][t][0]; //TODO: make the other possibles in this column/row/block fall in line
+						}
+					}
+				}				
+			}
+		}
+	}
+
+	possiblesToSolve();
+	//fillPossibles(); //this undoes the work of the nakedSubset - I need to treat this differently now
 	printArrayToTable(possibles);
+
 }

@@ -3,8 +3,8 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Sudoku Solver</title>
-	<style>
-		table { border: 2px solid black; margin-bottom: 10px;   font-family: Courier, monospace; font-size: 20px;  border-collapse: collapse; }
+	<style type="text/css" media="screen, print">
+		table { border: 2px solid black; margin-bottom: 10px;   font-family: Courier, monospace; font-size: 14px;  border-collapse: collapse; }
 		table tr { border-bottom: 1px dotted black; }
 		table tr:nth-child(3n) { border-bottom: 2px solid black; }
 		table tr td:nth-child(3n) { border-right: 2px solid black; }
@@ -13,6 +13,12 @@
 		table tr td { border-right: 1px dotted black; }
 		td { padding: 10px; }
 	</style>
+
+	<style type="text/css" media="print">
+		table { font-size: 10px; } 
+		table.pbb { page-break-before: always; }
+	</style>
+
 </head>
 <body>
 	<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
@@ -41,7 +47,7 @@
 
 
 		/* medium */
-
+		
 		var puzzle = [ 	[0,0,0,9,0,7,0,0,0], 
 						[9,0,0,0,0,0,0,0,8], 
 						[0,3,0,4,0,5,0,2,0], 
@@ -51,6 +57,7 @@
 						[0,7,0,6,0,4,0,3,0], 
 						[2,0,0,0,0,0,0,0,9], 
 						[0,0,0,1,0,2,0,0,0]];
+
 /*
 		first = [5,3,0,0,7,0,0,0,0];
 		second = [6,0,0,1,9,5,0,0,0];
@@ -60,18 +67,20 @@
 		inBoth = intersection(first,second);
 		console.log(inBoth);
 */
+		
+		printArrayToTable(puzzle);
 		fillPossibles();
 		possiblesToSolve();
-		printArrayToTable(puzzle);
 
 		while(moreSinglesInPossibles()) {
 			fillPossibles();
-			possiblesToSolve();	
-			printArrayToTable(puzzle);
+			possiblesToSolve();
 		}
 
+		printArrayToTable(puzzle);
 		if (!moreSinglesInPossibles() && hasMorePossibles()) {
-			printArrayToTable(possibles);
+			printArrayToTable(possibles, true);
+			nakedSubset();
 		}
 	</script>
 </body>
