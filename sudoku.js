@@ -120,6 +120,9 @@ function possiblesToSolve() {
 				puzzle[pi][pj] = possibles[pi][pj][0];
 				//possibles[pi][pj] = possibles[pi][pj][0];
 			}
+			if (possibles[pi][pj].constructor == Number) {
+				puzzle[pi][pj] = possibles[pi][pj];
+			}
 		}
 	}
 }
@@ -190,7 +193,7 @@ function nsSolve(row, col, num) {
 			if (idx != -1) {
 				possibles[row][i].splice(idx, 1);
 				if (possibles[row][i].length == 1) {
-					possibles[row][i] = possibles[row][i][0]; //TODO: make the other possibles in this column/row/block fall in line
+					possibles[row][i] = possibles[row][i][0]; 
 					nsSolve(row, i, possibles[row][i]);
 				}		
 			}			
@@ -204,39 +207,80 @@ function nsSolve(row, col, num) {
 			if (idx != -1) {
 				possibles[i][col].splice(idx, 1);
 				if (possibles[i][col].length == 1) {
-					possibles[i][col] = possibles[i][col][0]; //TODO: make the other possibles in this column/row/block fall in line
+					possibles[i][col] = possibles[i][col][0]; 
 					nsSolve(i, col, possibles[i][col]);
 				}				
 			}				
 		}
 	}
+}
 
-	//TODO: Get block information, clear adjoining cells in this block
+function clearBlock(row, col) {
+//TODO: Get block information, clear adjoining cells in this block
+	bottomRow = Math.floor(row/3.0) * 3;
+	bottomCol = Math.floor(col/3.0) * 3;
+	for (r = bottomRow; r<bottomRow+3; r++) {
+		for (c = bottomCol; c<bottomCol+3; c++) {
+			var alreadySolved = sudokuBlock(r,c);
+			if (possibles[r][c].constructor == Array) {
+				//for each cell in possibles[r][c], find anything in sudokuBlock(r,c) that exists in possibles[r][c] and remove it from possibles[r][c]
+				var toRemove = intersection(possibles[r][c], alreadySolved);
+				for (item in toRemove) { 
+					idx = possibles[r][c].indexOf(toRemove[item]);
+					if (idx != -1) {
+						possibles[r][c].splice(idx, 1);
+					}
+				}
+
+				//now that we have done that, if we only have one item left, do this:
+				if (possibles[r][c].length == 1) {
+					possibles[r][c] = possibles[r][c][0]; 
+					nsSolve(r, c, possibles[r][c]);
+				}					
+			}
+	
+		}
+	}	
 }
 
 function nakedSubset() {
+	var numChanges = 0;
 	/* if we have two cells that contain [1, 6] in a row or column, we can remove 1 and 6 from every possible array in that column (except the ones where 1 and 6 are the only options.) */
 	for (t = 0; t < 9; t++) {
 		d = possibles[t].filter(function (value) { return value.length == 2 && value.constructor == Array; });
+		ds = []; 
+		for (item in d) { ds.push(cellToString(d[item])); }
+		ds.sort();
+		//once they're sorted, if two adjoining elements are equal, we have a match. take those elements and set them aside for processing.
+		candidates = [];
+		for (var i=0; i<ds.length - 1; i++) {
+			if (ds[i] == ds[i+1]) {
+				candidates.push($.map(ds[i].split(","), function(value){
+				    return parseInt(value, 10);
+				}));
+			}
+		}
 
-		/* flaw: this works great if there are ONLY two cells with matching pairs in them. If you have three cells with pairs, this fails to process them. */
-		if (d.length == 2 && possiblesEqual(d[0], d[1])) {
+		for (item in candidates) { 
+			d = candidates[item]; 
 
 			for (i = 0 ; i < 9; i++ ) {
-				/*	what to do? cycle through the whole row and use splice to delete one element at a time, then 
-				go through fillPossibles() and possiblesToSolve(). */
+				/*	what to do? cycle through the whole row and use splice to delete one element at a time */
 
 				if (possibles[t][i].constructor == Array && possibles[t][i].length >= 2) {
-					if (!possiblesEqual(d[0], possibles[t][i])) {
+					if (!possiblesEqual(d, possibles[t][i])) {
 						for (p = 0; p<2; p++) {
-							idx = possibles[t][i].indexOf(d[0][p]);
+							idx = possibles[t][i].indexOf(d[p]);
 							if (idx != -1) {
 								possibles[t][i].splice(idx, 1);
+								numChanges++;
 							}				
 						}
 						if (possibles[t][i].length == 1) {
-							possibles[t][i] = possibles[t][i][0]; //TODO: make the other possibles in this column/row/block fall in line
-							nsSolve(t, i, possibles[t][i]);				
+							possibles[t][i] = possibles[t][i][0];
+							numChanges++;
+							nsSolve(t, i, possibles[t][i]);
+							//clearBlock(t, i);			
 						}
 					}
 				}
@@ -245,36 +289,66 @@ function nakedSubset() {
 	}
 
 	for (t = 0; t < 9; t++) {
-		console.log("column " + t);
+		//console.log("column " + t);
 		d = possiblesColumn(t).filter(function (value) { return value.length == 2 && value.constructor == Array; });
 		// flaw: this works great if there are ONLY two cells with matching pairs in them. If you have three cells with pairs, this fails to process them.
-		if (d.length == 2 && possiblesEqual(d[0], d[1])) {
+
+		ds = []; 
+		for (item in d) { ds.push(cellToString(d[item])); }
+		ds.sort();
+		//once they're sorted, if two adjoining elements are equal, we have a match. take those elements and set them aside for processing.
+		candidates = [];
+		for (var i=0; i<ds.length - 1; i++) {
+			if (ds[i] == ds[i+1]) {
+				candidates.push($.map(ds[i].split(","), function(value){
+				    return parseInt(value, 10);
+				}));
+			}
+		}
+
+		for (item in candidates) { 
+			d = candidates[item]; 
 			for (i = 0 ; i < 9; i++ ) {
-				console.log("i: " + i + " t: "  + t);
-				//	what to do? cycle through each cell in the column and use splice to delete one element at a time, then go through fillPossibles() and possiblesToSolve(). 
+				//console.log("i: " + i + " t: "  + t);
+				//	what to do? cycle through each cell in the column and use splice to delete one element at a time
 				if (possibles[i][t].constructor == Array && possibles[i][t].length >= 2) {
-					if (!possiblesEqual(d[0], possibles[i][t])) {
+					if (!possiblesEqual(d, possibles[i][t])) {
 						for (p = 0; p<2; p++) {
-							console.log("Remove " + d[0][p] + " from " + possibles[i][t]);
-							idx = possibles[i][t].indexOf(d[0][p]);
+							//console.log("Remove " + d[p] + " from " + possibles[i][t]);
+							idx = possibles[i][t].indexOf(d[p]);
 							if (idx != -1) {
 								possibles[i][t].splice(idx, 1);
+								numChanges++;
 							}
 							
 						}
 						if (possibles[i][t].length == 1) {
-							possibles[i][t] = possibles[i][t][0]; //TODO: make the other possibles in this column/row/block fall in line
-							nsSolve(i, t, possibles[i][t][0]);
-							nsSolve(i, t, possibles[i][t]);		
+							possibles[i][t] = possibles[i][t][0];
+							numChanges++;
+							nsSolve(i, t, possibles[i][t]);	
+							//clearBlock(i, t);			
 						}
 					}
 				}				
 			}
-		}
+		 }
 	}
+
+	/* All I want to do here is pass the first possible array to this and let it clean up the rest. */
+	for (i=0; i<9; i++) {
+		for (j=0; j<9; j++) {
+			if (possibles[i][j].constructor == Array) {
+				clearBlock(i, j);
+				i=10; j=10; //trying to break out of double for loops is ugly at best. The best way is to make your conditions of both loops invalid.
+				break;
+			}
+		}
+ 	}
+	
 
 	possiblesToSolve();
 	//fillPossibles(); //this undoes the work of the nakedSubset - I need to treat this differently now
 	printArrayToTable(possibles);
 
+	return numChanges;
 }
