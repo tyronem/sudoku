@@ -3,6 +3,16 @@
 /* TODO: Extend Array so I can call uniques, union and intersection natively. (Do I need to make the solution more general and not Integer specific? (Rethink this one) */
 //TODO: cleanup entire file
 
+var possibles = [	[[],[],[],[],[],[],[],[],[]], 
+					[[],[],[],[],[],[],[],[],[]], 
+					[[],[],[],[],[],[],[],[],[]], 
+					[[],[],[],[],[],[],[],[],[]], 
+					[[],[],[],[],[],[],[],[],[]], 
+					[[],[],[],[],[],[],[],[],[]], 
+					[[],[],[],[],[],[],[],[],[]], 
+					[[],[],[],[],[],[],[],[],[]], 
+					[[],[],[],[],[],[],[],[],[]]];
+
 function uniques(yourArray) {
 	uniq = {};
 	yourArray = yourArray.sort();
@@ -87,16 +97,6 @@ function sudokuBlock(c, r) {
 	blockitems = uniques(blockitems);
 	return blockitems;
 }
-
-var possibles = [	[[],[],[],[],[],[],[],[],[]], 
-					[[],[],[],[],[],[],[],[],[]], 
-					[[],[],[],[],[],[],[],[],[]], 
-					[[],[],[],[],[],[],[],[],[]], 
-					[[],[],[],[],[],[],[],[],[]], 
-					[[],[],[],[],[],[],[],[],[]], 
-					[[],[],[],[],[],[],[],[],[]], 
-					[[],[],[],[],[],[],[],[],[]], 
-					[[],[],[],[],[],[],[],[],[]]];
 
 function fillPossibles() {
 	for (var pi = 0; pi < 9; pi++) {
@@ -216,7 +216,7 @@ function nsSolve(row, col, num) {
 }
 
 function clearBlock(row, col) {
-//TODO: Get block information, clear adjoining cells in this block
+	//TODO: Get block information, clear adjoining cells in this block
 	bottomRow = Math.floor(row/3.0) * 3;
 	bottomCol = Math.floor(col/3.0) * 3;
 	for (r = bottomRow; r<bottomRow+3; r++) {
@@ -280,7 +280,6 @@ function nakedSubset() {
 							possibles[t][i] = possibles[t][i][0];
 							numChanges++;
 							nsSolve(t, i, possibles[t][i]);
-							//clearBlock(t, i);			
 						}
 					}
 				}
@@ -326,7 +325,6 @@ function nakedSubset() {
 							possibles[i][t] = possibles[i][t][0];
 							numChanges++;
 							nsSolve(i, t, possibles[i][t]);	
-							//clearBlock(i, t);			
 						}
 					}
 				}				
@@ -334,7 +332,7 @@ function nakedSubset() {
 		 }
 	}
 
-	/* All I want to do here is pass the first possible array to this and let it clean up the rest. */
+	/* All I want to do here is pass the first possible array to this and let it clean up the rest.  */
 	for (i=0; i<9; i++) {
 		for (j=0; j<9; j++) {
 			if (possibles[i][j].constructor == Array) {
@@ -349,6 +347,8 @@ function nakedSubset() {
 	possiblesToSolve();
 	//fillPossibles(); //this undoes the work of the nakedSubset - I need to treat this differently now
 	printArrayToTable(possibles);
+
+	//TODO: clear a cell where you have a unicorn in a row/cell. If there's an 8 as a possible, and it can't be anywhere else in that row/col/block, it has to be an 8.
 
 	return numChanges;
 }
