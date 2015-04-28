@@ -238,7 +238,8 @@ var Sudoku = (function (){
 					//now that we have done that, if we only have one item left, do this:
 					if (possibles[r][c].length == 1) {
 						possibles[r][c] = possibles[r][c][0]; 
-						nsSolve(r, c, possibles[r][c]);
+						//nsSolve(r, c, possibles[r][c]);
+						//clearBlock(r, c);
 					}					
 				}
 		
@@ -336,6 +337,8 @@ var Sudoku = (function (){
 		}
 
 		/* All I want to do here is pass the first possible array to this and let it clean up the rest.  */
+		/* Let me revisit this - it's not working quite right */
+		/*
 		for (i=0; i<9; i++) {
 			for (j=0; j<9; j++) {
 				if (possibles[i][j].constructor == Array) {
@@ -345,6 +348,7 @@ var Sudoku = (function (){
 				}
 			}
 	 	}
+	 	*/
 		
 
 		possiblesToSolve();
