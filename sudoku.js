@@ -244,8 +244,8 @@ var Sudoku = (function (){
 					if (possibles[r][c].length == 1) {
 						possibles[r][c] = possibles[r][c][0];
 						changes++; 
-						//nsSolve(r, c, possibles[r][c]);
-						//clearBlock(r, c);
+						nsSolve(r, c, possibles[r][c]);
+						changes += correctBlock(r, c);
 					}					
 				}
 		
@@ -293,6 +293,8 @@ var Sudoku = (function (){
 								console.log("nsSolve row: cell[" + t + "],[" + i + "] only has one match left: " + possibles[t][i][0]);
 								possibles[t][i] = possibles[t][i][0];
 								numChanges++;
+								console.log("correctBlock: [" + t + "],[" + i + "]");
+								numChanges += correctBlock(t, i);
 								console.log("nsSolve row: Recursion on [" + t + "],[" + i + "]");
 								nsSolve(t, i, possibles[t][i]);
 							}
@@ -342,6 +344,8 @@ var Sudoku = (function (){
 								console.log("nsSolve col: cell[" + i + "],[" + t + "] only has one match left: " + possibles[i][t][0]);				
 								possibles[i][t] = possibles[i][t][0];
 								numChanges++;
+								console.log("correctBlock: [" + i + "],[" + t + "]");
+								numChanges += correctBlock(i, t);								
 								console.log("nsSolve col: Recursion on [" + i + "],[" + t + "]");
 								nsSolve(i, t, possibles[i][t]);	
 							}
@@ -353,6 +357,7 @@ var Sudoku = (function (){
 
 		/* All I want to do here is pass the first possible array to this and let it clean up the rest.  */
 		/* Let me revisit this - it's not working quite right */
+		/*
 		for (i=0; i<9; i++) {
 			for (j=0; j<9; j++) {
 				if (possibles[i][j].constructor == Array) {
@@ -360,6 +365,7 @@ var Sudoku = (function (){
 				}
 			}
 	 	}
+	 	*/
 
 		possiblesToSolve();
 		//fillPossibles(); //this would undo the work of the nakedSubset - I need to treat this differently now
@@ -373,6 +379,7 @@ var Sudoku = (function (){
 
 	return {
 		solve: function(puzzleArray) {
+			$("table").not("table.entry").remove(); //remove all the other tables
 			puzzle = puzzleArray;	//set internal array
 			printArrayToTable(puzzle); //print initial puzzle
 
@@ -392,14 +399,6 @@ var Sudoku = (function (){
 				numChanges = nakedSubset();
 				while (numChanges > 0) {
 					numChanges = nakedSubset();
-					for (i=0; i<9; i++) {
-						for (j=0; j<9; j++) {
-							//for some reason i gets to be 9 and this fails
-							if (possibles[i][j].constructor == Array) {
-								numChanges += correctBlock(i, j);
-							}
-						}
-				 	}					
 					console.log("Number of changes: " + numChanges);
 				}
 				
