@@ -197,6 +197,7 @@ var Sudoku = (function (){
 					possibles[row][i].splice(idx, 1);
 					if (possibles[row][i].length == 1) {
 						possibles[row][i] = possibles[row][i][0]; 
+						//TODO: catch the other items in this block
 						nsSolve(row, i, possibles[row][i]);
 					}		
 				}			
@@ -211,6 +212,7 @@ var Sudoku = (function (){
 					possibles[i][col].splice(idx, 1);
 					if (possibles[i][col].length == 1) {
 						possibles[i][col] = possibles[i][col][0]; 
+						//TODO: catch the other items in this block
 						nsSolve(i, col, possibles[i][col]);
 					}				
 				}				
@@ -219,6 +221,7 @@ var Sudoku = (function (){
 	}
 
 	function clearBlock(row, col) {
+		//I need to revisit my approach - go through each possible cell that has an array. Find 
 		//TODO: Get block information, clear adjoining cells in this block
 		bottomRow = Math.floor(row/3.0) * 3;
 		bottomCol = Math.floor(col/3.0) * 3;
@@ -248,8 +251,10 @@ var Sudoku = (function (){
 	}
 
 	function nakedSubset() {
+		printArrayToTable(possibles);
 		var numChanges = 0;
 		/* if we have two cells that contain [1, 6] in a row or column, we can remove 1 and 6 from every possible array in that column (except the ones where 1 and 6 are the only options.) */
+		console.log("starting nsSolve for rows");
 		for (t = 0; t < 9; t++) {
 			d = possibles[t].filter(function (value) { return value.length == 2 && value.constructor == Array; });
 			ds = []; 
@@ -266,23 +271,24 @@ var Sudoku = (function (){
 			}
 
 			for (item in candidates) { 
-				d = candidates[item]; 
-
+				d = candidates[item];
 				for (i = 0 ; i < 9; i++ ) {
 					/*	what to do? cycle through the whole row and use splice to delete one element at a time */
-
 					if (possibles[t][i].constructor == Array && possibles[t][i].length >= 2) {
 						if (!possiblesEqual(d, possibles[t][i])) {
 							for (p = 0; p<2; p++) {
 								idx = possibles[t][i].indexOf(d[p]);
 								if (idx != -1) {
+									console.log("nsSolve row: removing " + d[p] + " from " + cellToString(possibles[t][i])); 
 									possibles[t][i].splice(idx, 1);
 									numChanges++;
 								}				
 							}
 							if (possibles[t][i].length == 1) {
+								console.log("nsSolve row: cell[" + t + "],[" + i + "] only has one match left: " + possibles[t][i][0]);
 								possibles[t][i] = possibles[t][i][0];
 								numChanges++;
+								console.log("nsSolve row: Recursion on [" + t + "],[" + i + "]");
 								nsSolve(t, i, possibles[t][i]);
 							}
 						}
@@ -291,6 +297,7 @@ var Sudoku = (function (){
 			}
 		}
 
+		console.log("starting nsSolve for col");
 		for (t = 0; t < 9; t++) {
 			//console.log("column " + t);
 			d = possiblesColumn(t).filter(function (value) { return value.length == 2 && value.constructor == Array; });
@@ -304,7 +311,7 @@ var Sudoku = (function (){
 			for (var i=0; i<ds.length - 1; i++) {
 				if (ds[i] == ds[i+1]) {
 					candidates.push($.map(ds[i].split(","), function(value){
-					    return parseInt(value, 10);
+					    return parseInt(value);
 					}));
 				}
 			}
@@ -320,14 +327,17 @@ var Sudoku = (function (){
 								//console.log("Remove " + d[p] + " from " + possibles[i][t]);
 								idx = possibles[i][t].indexOf(d[p]);
 								if (idx != -1) {
+									console.log("nsSolve col: removing " + d[p] + " from " + cellToString(possibles[i][t])); 
 									possibles[i][t].splice(idx, 1);
 									numChanges++;
 								}
 								
 							}
 							if (possibles[i][t].length == 1) {
+								console.log("nsSolve col: cell[" + i + "],[" + t + "] only has one match left: " + possibles[i][t][0]);				
 								possibles[i][t] = possibles[i][t][0];
 								numChanges++;
+								console.log("nsSolve col: Recursion on [" + i + "],[" + t + "]");
 								nsSolve(i, t, possibles[i][t]);	
 							}
 						}
@@ -335,21 +345,6 @@ var Sudoku = (function (){
 				}
 			 }
 		}
-
-		/* All I want to do here is pass the first possible array to this and let it clean up the rest.  */
-		/* Let me revisit this - it's not working quite right */
-		/*
-		for (i=0; i<9; i++) {
-			for (j=0; j<9; j++) {
-				if (possibles[i][j].constructor == Array) {
-					clearBlock(i, j);
-					i=10; j=10; //trying to break out of double for loops is ugly at best. The best way is to make your conditions of both loops invalid.
-					break;
-				}
-			}
-	 	}
-	 	*/
-		
 
 		possiblesToSolve();
 		//fillPossibles(); //this would undo the work of the nakedSubset - I need to treat this differently now
@@ -385,8 +380,10 @@ var Sudoku = (function (){
 				}
 				
 			}
+
 			//we're done solving.
 			printArrayToTable(puzzle);
+			printArrayToTable(possibles);
 		},
 	};
 
