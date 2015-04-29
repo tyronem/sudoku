@@ -220,7 +220,8 @@ var Sudoku = (function (){
 		}
 	}
 
-	function clearBlock(row, col) {
+	function correctBlock(row, col) {
+		var changes = 0;
 		//I need to revisit my approach - go through each possible cell that has an array. Find 
 		//TODO: Get block information, clear adjoining cells in this block
 		bottomRow = Math.floor(row/3.0) * 3;
@@ -235,12 +236,14 @@ var Sudoku = (function (){
 						idx = possibles[r][c].indexOf(toRemove[item]);
 						if (idx != -1) {
 							possibles[r][c].splice(idx, 1);
+							changes++;
 						}
 					}
 
 					//now that we have done that, if we only have one item left, do this:
 					if (possibles[r][c].length == 1) {
-						possibles[r][c] = possibles[r][c][0]; 
+						possibles[r][c] = possibles[r][c][0];
+						changes++; 
 						//nsSolve(r, c, possibles[r][c]);
 						//clearBlock(r, c);
 					}					
@@ -248,6 +251,8 @@ var Sudoku = (function (){
 		
 			}
 		}	
+
+		return changes;
 	}
 
 	function nakedSubset() {
@@ -346,6 +351,16 @@ var Sudoku = (function (){
 			 }
 		}
 
+		/* All I want to do here is pass the first possible array to this and let it clean up the rest.  */
+		/* Let me revisit this - it's not working quite right */
+		for (i=0; i<9; i++) {
+			for (j=0; j<9; j++) {
+				if (possibles[i][j].constructor == Array) {
+					numChanges += correctBlock(i, j);
+				}
+			}
+	 	}
+
 		possiblesToSolve();
 		//fillPossibles(); //this would undo the work of the nakedSubset - I need to treat this differently now
 		printArrayToTable(possibles);
@@ -377,6 +392,15 @@ var Sudoku = (function (){
 				numChanges = nakedSubset();
 				while (numChanges > 0) {
 					numChanges = nakedSubset();
+					for (i=0; i<9; i++) {
+						for (j=0; j<9; j++) {
+							//for some reason i gets to be 9 and this fails
+							if (possibles[i][j].constructor == Array) {
+								numChanges += correctBlock(i, j);
+							}
+						}
+				 	}					
+					console.log("Number of changes: " + numChanges);
 				}
 				
 			}
