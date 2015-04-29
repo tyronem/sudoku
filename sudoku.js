@@ -256,10 +256,10 @@ var Sudoku = (function (){
 	}
 
 	function nakedSubset() {
-		printArrayToTable(possibles);
+		//printArrayToTable(possibles);
 		var numChanges = 0;
 		/* if we have two cells that contain [1, 6] in a row or column, we can remove 1 and 6 from every possible array in that column (except the ones where 1 and 6 are the only options.) */
-		console.log("starting nsSolve for rows");
+		//console.log("starting nsSolve for rows");
 		for (t = 0; t < 9; t++) {
 			d = possibles[t].filter(function (value) { return value.length == 2 && value.constructor == Array; });
 			ds = []; 
@@ -284,18 +284,18 @@ var Sudoku = (function (){
 							for (p = 0; p<2; p++) {
 								idx = possibles[t][i].indexOf(d[p]);
 								if (idx != -1) {
-									console.log("nsSolve row: removing " + d[p] + " from " + cellToString(possibles[t][i])); 
+									//console.log("nsSolve row: removing " + d[p] + " from " + cellToString(possibles[t][i])); 
 									possibles[t][i].splice(idx, 1);
 									numChanges++;
 								}				
 							}
 							if (possibles[t][i].length == 1) {
-								console.log("nsSolve row: cell[" + t + "],[" + i + "] only has one match left: " + possibles[t][i][0]);
+								//console.log("nsSolve row: cell[" + t + "],[" + i + "] only has one match left: " + possibles[t][i][0]);
 								possibles[t][i] = possibles[t][i][0];
 								numChanges++;
-								console.log("correctBlock: [" + t + "],[" + i + "]");
+								//console.log("correctBlock: [" + t + "],[" + i + "]");
 								numChanges += correctBlock(t, i);
-								console.log("nsSolve row: Recursion on [" + t + "],[" + i + "]");
+								//console.log("nsSolve row: Recursion on [" + t + "],[" + i + "]");
 								nsSolve(t, i, possibles[t][i]);
 							}
 						}
@@ -304,7 +304,7 @@ var Sudoku = (function (){
 			}
 		}
 
-		console.log("starting nsSolve for col");
+		//console.log("starting nsSolve for col");
 		for (t = 0; t < 9; t++) {
 			//console.log("column " + t);
 			d = possiblesColumn(t).filter(function (value) { return value.length == 2 && value.constructor == Array; });
@@ -334,19 +334,19 @@ var Sudoku = (function (){
 								//console.log("Remove " + d[p] + " from " + possibles[i][t]);
 								idx = possibles[i][t].indexOf(d[p]);
 								if (idx != -1) {
-									console.log("nsSolve col: removing " + d[p] + " from " + cellToString(possibles[i][t])); 
+									//console.log("nsSolve col: removing " + d[p] + " from " + cellToString(possibles[i][t])); 
 									possibles[i][t].splice(idx, 1);
 									numChanges++;
 								}
 								
 							}
 							if (possibles[i][t].length == 1) {
-								console.log("nsSolve col: cell[" + i + "],[" + t + "] only has one match left: " + possibles[i][t][0]);				
+								//console.log("nsSolve col: cell[" + i + "],[" + t + "] only has one match left: " + possibles[i][t][0]);				
 								possibles[i][t] = possibles[i][t][0];
 								numChanges++;
-								console.log("correctBlock: [" + i + "],[" + t + "]");
+								//console.log("correctBlock: [" + i + "],[" + t + "]");
 								numChanges += correctBlock(i, t);								
-								console.log("nsSolve col: Recursion on [" + i + "],[" + t + "]");
+								//console.log("nsSolve col: Recursion on [" + i + "],[" + t + "]");
 								nsSolve(i, t, possibles[i][t]);	
 							}
 						}
@@ -355,28 +355,19 @@ var Sudoku = (function (){
 			 }
 		}
 
-		/* All I want to do here is pass the first possible array to this and let it clean up the rest.  */
-		/* Let me revisit this - it's not working quite right */
-		/*
-		for (i=0; i<9; i++) {
-			for (j=0; j<9; j++) {
-				if (possibles[i][j].constructor == Array) {
-					numChanges += correctBlock(i, j);
-				}
-			}
-	 	}
-	 	*/
-
 		possiblesToSolve();
 		//fillPossibles(); //this would undo the work of the nakedSubset - I need to treat this differently now
-		printArrayToTable(possibles);
+		//printArrayToTable(possibles);
 
 		//TODO: clear a cell where you have a unicorn in a row/cell. If there's an 8 as a possible, and it can't be anywhere else in that row/col/block, it has to be an 8.
 
 		return numChanges;
 	}
 
-
+	function checkResult() {
+		
+	}
+	
 	return {
 		solve: function(puzzleArray) {
 			$("table").not("table.entry").remove(); //remove all the other tables
@@ -399,7 +390,7 @@ var Sudoku = (function (){
 				numChanges = nakedSubset();
 				while (numChanges > 0) {
 					numChanges = nakedSubset();
-					console.log("Number of changes: " + numChanges);
+					//console.log("Number of changes: " + numChanges);
 				}
 				
 			}
@@ -413,16 +404,6 @@ var Sudoku = (function (){
 })();
 
 
-/*
-		first = [5,3,0,0,7,0,0,0,0];
-		second = [6,0,0,1,9,5,0,0,0];
-		u = union(first,second);
-		console.log(u);
-
-		inBoth = intersection(first,second);
-		console.log(inBoth);
-*/
-
 /* TODO: Allow a user to enter the matrix directly and show only ONE solution or the possibles array */
-//TODO: cleanup entire file
-
+// TODO: cleanup entire file
+// TODO: check your solution.
