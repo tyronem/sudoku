@@ -1,6 +1,9 @@
+import * from './sudoku_utils.js';
+
 var Sudoku = (function (){
 
-	var possibles = [	[[],[],[],[],[],[],[],[],[]], 
+
+	let possibles = [	[[],[],[],[],[],[],[],[],[]], 
 						[[],[],[],[],[],[],[],[],[]], 
 						[[],[],[],[],[],[],[],[],[]], 
 						[[],[],[],[],[],[],[],[],[]], 
@@ -10,7 +13,7 @@ var Sudoku = (function (){
 						[[],[],[],[],[],[],[],[],[]], 
 						[[],[],[],[],[],[],[],[],[]]];
 
-	var puzzle = [		[[],[],[],[],[],[],[],[],[]], 
+	let puzzle = [		[[],[],[],[],[],[],[],[],[]], 
 						[[],[],[],[],[],[],[],[],[]], 
 						[[],[],[],[],[],[],[],[],[]], 
 						[[],[],[],[],[],[],[],[],[]], 
@@ -20,60 +23,9 @@ var Sudoku = (function (){
 						[[],[],[],[],[],[],[],[],[]], 
 						[[],[],[],[],[],[],[],[],[]]];
 
-	function uniques(yourArray) {
-		uniq = {};
-		//for each item in the array, put each item in a hash. This will give us uniques keys. But we don't need zeroes.
-		//Can this be done with a filter function? Might be faster if yes.
-		var nz = yourArray.filter(function(item) { return item != 0 } );
-
-		for (item in nz) { 
-			if (parseInt(nz[item]) !== 0) { 
-				uniq[nz[item]] = true; 
-			}
-		}
-
-		//get the keys, then coerce them back to integers.
-		uniqKeys = $.map( Object.keys(uniq), function( val, i ) {  return parseInt(val); });
-
-		return uniqKeys.sort();
-	}
-
-	function union(leftarray, rightarray) {
-		/* Union of the sets A and B, denoted A ∪ B, is the set of all objects that are a member of A, or B, or both. The union of {1, 2, 3} and {2, 3, 4} is the set {1, 2, 3, 4} . */
-		return uniques(leftarray.concat(rightarray));
-	}
-
-	function intersection(leftarray, rightarray) {
-		/* Intersection of the sets A and B, denoted A ∩ B, is the set of all objects that are members of both A and B. The intersection of {1, 2, 3} and {2, 3, 4} is the set {2, 3} . */
-		z = uniques(leftarray.concat(rightarray));
-		//console.log(z);	
-
-		common = [];
-		//now that I have the uniques, let's run through that array and only return ones that appear in both arrays
-		for (i=0; i<z.length; i++) {
-			if (leftarray.indexOf(z[i]) > -1 && rightarray.indexOf(z[i]) > -1) {
-				common.push(z[i]);
-			}
-		}
-
-		return common;
-	}
-
-	function difference(leftarray, rightarray) {
-		/* Set difference of U and A, denoted U \ A, is the set of all members of U that are not members of A. The set difference {1,2,3} \ {2,3,4} is {1} , while, conversely, the set difference {2,3,4} \ {1,2,3} is {4}	*/
-		diff = leftarray.filter(function(value) {
-			return rightarray.indexOf(value) == -1;
-		});
-
-		return diff;
-	}
-
-	function missingNumbers(arr) {
-		return difference([1,2,3,4,5,6,7,8,9], arr);
-	}
 
 	function sudokuColumn(c) { 
-		col = [];
+		let col = [];
 		for (var i=0; i<9; i++) {
 			col.push(puzzle[i][c]);
 		}
@@ -81,7 +33,7 @@ var Sudoku = (function (){
 	}
 
 	function possiblesColumn(c) { 
-		col = [];
+		let col = [];
 		for (var i=0; i<9; i++) {
 			col.push(possibles[i][c]);
 		}
@@ -90,11 +42,13 @@ var Sudoku = (function (){
 
 	function sudokuBlock(c, r) {
 		//Give me all the numbers within whatever block we are in.
+		let bottomRow, bottomCol, blockitems; 
+
 		bottomRow = Math.floor(r/3.0) * 3;
 		bottomCol = Math.floor(c/3.0) * 3;
 		blockitems = [];
-		for ( i = bottomRow; i<bottomRow+3; i++) {
-			temp = puzzle[i].slice(bottomCol,bottomCol+3);
+		for (var i = bottomRow; i<bottomRow+3; i++) {
+			var temp = puzzle[i].slice(bottomCol,bottomCol+3);
 			blockitems = blockitems.concat(temp);
 		}
 		blockitems = uniques(blockitems);
@@ -162,7 +116,7 @@ var Sudoku = (function (){
 		for (var pi = 0; pi < 9; pi++) {
 			var $line = $( "<tr></tr>" );
 			for (var pj = 0; pj < 9; pj++) {
-				if (arr[pi][pj].constructor == Number) { 
+				if (arr[pi][pj].constructor === Number) { 
 					if (arr[pi][pj] == 0) {
 						$line.append( $( "<td></td>" ).html("&nbsp;"));
 					} else {
@@ -178,9 +132,7 @@ var Sudoku = (function (){
 		$table.appendTo(document.body);
 	}
 
-	function cellToString(arr) {
-		return arr.join(",");
-	}
+
 
 	function possiblesEqual(first, second) {
 		/* this is imperfect (in general, and a little bit slow), but it works in this case. */
@@ -221,7 +173,7 @@ var Sudoku = (function (){
 	}
 
 	function correctBlock(row, col) {
-		var changes = 0;
+		let changes = 0;
 		//I need to revisit my approach - go through each possible cell that has an array. Find 
 		//TODO: Get block information, clear adjoining cells in this block
 		bottomRow = Math.floor(row/3.0) * 3;
@@ -313,8 +265,7 @@ var Sudoku = (function (){
 			ds = []; 
 			for (item in d) { ds.push(cellToString(d[item])); }
 			ds.sort();
-			//once they're sorted, if two adjoining elements are equal, we have a match. take those elements and set them aside for processing.
-			candidates = [];
+			//once they're sorted, if two adjoining elements are equal, we have a match. take those elements and set them aside for processingsolve()			candidates = [];
 			for (var i=0; i<ds.length - 1; i++) {
 				if (ds[i] == ds[i+1]) {
 					candidates.push($.map(ds[i].split(","), function(value){
@@ -364,9 +315,7 @@ var Sudoku = (function (){
 		return numChanges;
 	}
 
-	function checkResult() {
-		
-	}
+	
 	
 	return {
 		solve: function(puzzleArray) {
@@ -395,6 +344,7 @@ var Sudoku = (function (){
 				
 			}
 
+			checkResult();
 			//we're done solving.
 			printArrayToTable(puzzle);
 			printArrayToTable(possibles);
