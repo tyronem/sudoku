@@ -1,195 +1,393 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Sudoku Solver</title>
-	<style type="text/css" media="screen, print">
-		table { border: 2px solid black; margin-bottom: 10px;   font-family: Courier, monospace; font-size: 14px;  border-collapse: collapse; }
-		table tr { border-bottom: 1px dotted black; }
-		table tr:nth-child(3n) { border-bottom: 2px solid black; }
-		table tr td:nth-child(3n) { border-right: 2px solid black; }
-		table tr:nth-child(9) { border: none; }
-		table tr td:nth-child(9) { border: none; }
-		table tr td { border-right: 1px dotted black; }
-		td { padding: 10px; }
-		table.entry tr td { padding: 0;}
-		input[type='text'] { width: 1em; padding: 1em; margin: 0;}
+	<head>
+		<meta charset="UTF-8" />
+		<title>Sudoku Solver</title>
+		<style type="text/css" media="screen, print">
+			table {
+				border: 2px solid black;
+				margin-bottom: 10px;
+				font-family: Courier, monospace;
+				font-size: 14px;
+				border-collapse: collapse;
+			}
+			table tr {
+				border-bottom: 1px dotted black;
+			}
+			table tr:nth-child(3n) {
+				border-bottom: 2px solid black;
+			}
+			table tr td:nth-child(3n) {
+				border-right: 2px solid black;
+			}
+			table tr:nth-child(9) {
+				border: none;
+			}
+			table tr td:nth-child(9) {
+				border: none;
+			}
+			table tr td {
+				border-right: 1px dotted black;
+			}
+			td {
+				padding: 10px;
+			}
+			table.entry tr td {
+				padding: 0;
+			}
+			input[type="text"] {
+				width: 1em;
+				padding: 1em;
+				margin: 0;
+			}
 
+			html {
+				font-size: 18px;
+			}
 
-		html {
-		font-size: 18px;
-		}
+			.board {
+				display: inline-grid;
+				background: #aaa;
+				grid-template-columns: repeat(9, 3rem);
+				grid-template-rows: repeat(9, 3rem);
+				border: 2px solid black;
+			}
 
-		.board { 
-		display: inline-grid;
-		background: #aaa;
-		grid-template-columns: repeat(9, 3rem);
-		grid-template-rows: repeat(9, 3rem);
-		border: 2px solid black;
-		}
+			.cell {
+				background: #eee;
+				border: 1px dotted black;
+				padding: 10px;
+				position: relative;
+			}
 
-		.cell { 
-		background: #eee;
-		border: 1px dotted black;
-		padding: 10px;
-		position: relative;
-		}
+			.cell:focus,
+			.cell:hover,
+			.cell.active,
+			.cell input:focus {
+				background: #ffe900;
+			}
 
-		.cell:focus, .cell:hover, .cell.active, .cell input:focus {
-		background: #ffe900;
-		}
+			.cell input {
+				text-align: center;
+				font-family: Courier, monospace, sans-serif;
+				font-size: 2em;
+				height: 100%;
+				width: 100%;
+				margin: 0;
+				background: inherit;
+				margin: 0;
+				padding: 0;
+				border: 0;
+			}
 
-		.cell input {
-		text-align: center;
-		font-family: Courier, monospace, sans-serif;
-		font-size: 2em;
-		height: 100%;
-		width: 100%;
-		margin: 0;
-		background: inherit;
-		margin: 0;
-		padding: 0;
-		border: 0;
-		}
+			.col3,
+			.col6 {
+				border-right: 2px solid black;
+			}
 
-		.col3, .col6 { 
-		border-right: 2px solid black;
-		}
+			.row3,
+			.row6 {
+				border-bottom: 2px solid black;
+			}
 
-		.row3, .row6  {
-		border-bottom: 2px solid black;
-		}
+			.row1,
+			.row4,
+			.row7 {
+				border-top: 0;
+			}
 
-		.row1, .row4, .row7 {
-		border-top: 0;
-		}
+			.col1,
+			.col4,
+			.col7 {
+				border-left: 0;
+			}
 
-		.col1, .col4, .col7 {
-		border-left: 0;
-		}
+			.cell.wrong {
+				border: 1px solid #e2000;
+				background-color: rgba(226, 0, 0, 0.5);
+			}
 
-		.cell.wrong {
-		border: 1px solid #e2000;
-		background-color: rgba(226, 0, 0, 0.5);
-		}
+			.cell.wrong:after {
+				content: "✗";
+				position: absolute;
+				top: -2px;
+				left: 0px;
+				font-size: 20px;
+				color: white;
+			}
 
-		.cell.wrong:after {
-		content: "✗";
-		position: absolute; 
-		top: -2px;
-		left: 0px;
-		font-size: 20px;
-		color: white;
-		}
+			.cell.right {
+				border: 1px solid #0ea34f;
+				background-color: rgba(14, 163, 79, 0.5);
+			}
 
-		.cell.right {
-		border: 1px solid #0ea34f;
-		background-color: rgba(14, 163, 79, 0.5);
-		}
+			.cell.right:after {
+				content: "✓";
+				position: absolute;
+				top: -2px;
+				left: 0px;
+				font-size: 20px;
+				color: white;
+			}
+		</style>
 
-		.cell.right:after {
-		content: "✓";
-		position: absolute; 
-		top: -2px;
-		left: 0px;
-		font-size: 20px;
-		color: white;
-		}
-	</style>
-
-	<style type="text/css" media="print">
-		table { font-size: 10px; } 
-		table.pbb { page-break-before: always; }
-	</style>
-
-</head>
-<body>
-	<form>
-
-		<div class="board">
-	<span class="cell col1 row1"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col2 row1"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col3 row1"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col4 row1"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col5 row1"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col6 row1"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col7 row1"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col8 row1"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col9 row1"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col1 row2"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col2 row2"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col3 row2"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col4 row2"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col5 row2"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col6 row2"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col7 row2"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col8 row2"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col9 row2"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col1 row3"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col2 row3"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col3 row3"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col4 row3"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col5 row3"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col6 row3"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col7 row3"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col8 row3"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col9 row3"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col1 row4"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col2 row4"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col3 row4"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col4 row4"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col5 row4"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col6 row4"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col7 row4"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col8 row4"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col9 row4"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col1 row5"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col2 row5"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col3 row5"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col4 row5"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col5 row5"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col6 row5"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col7 row5"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col8 row5"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col9 row5"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col1 row6"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col2 row6"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col3 row6"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col4 row6"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col5 row6"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col6 row6"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col7 row6"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col8 row6"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col9 row6"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col1 row7"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col2 row7"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col3 row7"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col4 row7"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col5 row7"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col6 row7"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col7 row7"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col8 row7"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col9 row7"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col1 row8"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col2 row8"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col3 row8"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col4 row8"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col5 row8"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col6 row8"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col7 row8"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col8 row8"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col9 row8"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col1 row9"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col2 row9"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col3 row9"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col4 row9"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col5 row9"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col6 row9"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col7 row9"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col8 row9"><input type="text" class="" size="1" maxlength="1"></span>
-	<span class="cell col9 row9"><input type="text" class="" size="1" maxlength="1"></span>
-</div>
-<!-- 		<table class="entry">
+		<style type="text/css" media="print">
+			table {
+				font-size: 10px;
+			}
+			table.pbb {
+				page-break-before: always;
+			}
+		</style>
+	</head>
+	<body>
+		<form>
+			<div class="board">
+				<span class="cell col1 row1"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col2 row1"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col3 row1"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col4 row1"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col5 row1"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col6 row1"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col7 row1"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col8 row1"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col9 row1"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col1 row2"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col2 row2"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col3 row2"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col4 row2"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col5 row2"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col6 row2"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col7 row2"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col8 row2"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col9 row2"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col1 row3"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col2 row3"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col3 row3"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col4 row3"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col5 row3"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col6 row3"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col7 row3"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col8 row3"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col9 row3"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col1 row4"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col2 row4"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col3 row4"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col4 row4"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col5 row4"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col6 row4"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col7 row4"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col8 row4"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col9 row4"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col1 row5"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col2 row5"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col3 row5"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col4 row5"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col5 row5"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col6 row5"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col7 row5"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col8 row5"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col9 row5"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col1 row6"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col2 row6"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col3 row6"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col4 row6"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col5 row6"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col6 row6"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col7 row6"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col8 row6"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col9 row6"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col1 row7"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col2 row7"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col3 row7"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col4 row7"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col5 row7"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col6 row7"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col7 row7"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col8 row7"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col9 row7"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col1 row8"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col2 row8"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col3 row8"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col4 row8"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col5 row8"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col6 row8"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col7 row8"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col8 row8"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col9 row8"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col1 row9"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col2 row9"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col3 row9"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col4 row9"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col5 row9"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col6 row9"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col7 row9"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col8 row9"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+				<span class="cell col9 row9"
+					><input type="text" class="" size="1" maxlength="1"
+				/></span>
+			</div>
+			<!-- 		<table class="entry">
 			<tr class="row0">
 				<td><input type="text" tabindex="1" class="cell" maxlength="1" class="col0"></td>
 				<td><input type="text" tabindex="2" class="cell" maxlength="1" class="col1"></td>
@@ -289,80 +487,95 @@
 				<td><input type="text" tabindex="80" class="cell" maxlength="1" class="col7"></td>
 				<td><input type="text" tabindex="81" class="cell" maxlength="1" class="col8"></td>
 			</tr>
-		</table> -->	
-		<button id="solvebtn">Solve</button>
-		<input type="reset" value="Reset">
-	</form>
+		</table> -->
+			<button id="solvebtn">Solve</button>
+			<input type="reset" value="Reset" />
+		</form>
 
-	<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
-	<script src="sudoku.js"></script>
-	<script type="text/javascript">
-		/* easy */
-		var puzzle = [ 	[5,3,0,0,7,0,0,0,0], 
-						[6,0,0,1,9,5,0,0,0], 
-						[0,9,8,0,0,0,0,6,0], 
-						[8,0,0,0,6,0,0,0,3], 
-						[4,0,0,8,0,3,0,0,1], 
-						[7,0,0,0,2,0,0,0,6], 
-						[0,6,0,0,0,0,2,8,0], 
-						[0,0,0,4,1,9,0,0,5], 
-						[0,0,0,0,8,0,0,7,9]];
+		<script src="./jquery-3.7.1.min.js"></script>
+		<script src="sudoku.js"></script>
+		<script type="text/javascript">
+			/* easy */
+			var puzzle = [
+				[5, 3, 0, 0, 7, 0, 0, 0, 0],
+				[6, 0, 0, 1, 9, 5, 0, 0, 0],
+				[0, 9, 8, 0, 0, 0, 0, 6, 0],
+				[8, 0, 0, 0, 6, 0, 0, 0, 3],
+				[4, 0, 0, 8, 0, 3, 0, 0, 1],
+				[7, 0, 0, 0, 2, 0, 0, 0, 6],
+				[0, 6, 0, 0, 0, 0, 2, 8, 0],
+				[0, 0, 0, 4, 1, 9, 0, 0, 5],
+				[0, 0, 0, 0, 8, 0, 0, 7, 9],
+			];
 
-		/* easy */
-		var puzzle = [ 	[1,5,3,0,8,4,7,0,0], 
-						[2,0,8,6,9,5,0,0,0], 
-						[0,9,0,0,3,0,0,5,0], 
-						[0,1,0,4,0,0,2,0,0], 
-						[5,0,2,0,0,0,9,7,3], 
-						[8,3,7,0,5,0,4,0,6], 
-						[0,6,0,3,0,0,5,0,0], 
-						[0,2,0,0,1,0,0,9,0], 
-						[0,0,0,7,4,0,3,2,0]];
+			/* easy */
+			var puzzle = [
+				[1, 5, 3, 0, 8, 4, 7, 0, 0],
+				[2, 0, 8, 6, 9, 5, 0, 0, 0],
+				[0, 9, 0, 0, 3, 0, 0, 5, 0],
+				[0, 1, 0, 4, 0, 0, 2, 0, 0],
+				[5, 0, 2, 0, 0, 0, 9, 7, 3],
+				[8, 3, 7, 0, 5, 0, 4, 0, 6],
+				[0, 6, 0, 3, 0, 0, 5, 0, 0],
+				[0, 2, 0, 0, 1, 0, 0, 9, 0],
+				[0, 0, 0, 7, 4, 0, 3, 2, 0],
+			];
 
+			/* medium */
+			var puzzle = [
+				[0, 0, 0, 9, 0, 7, 0, 0, 0],
+				[9, 0, 0, 0, 0, 0, 0, 0, 8],
+				[0, 3, 0, 4, 0, 5, 0, 2, 0],
+				[3, 0, 7, 0, 4, 0, 2, 0, 6],
+				[0, 0, 0, 5, 0, 9, 0, 0, 0],
+				[8, 0, 9, 0, 2, 0, 1, 0, 3],
+				[0, 7, 0, 6, 0, 4, 0, 3, 0],
+				[2, 0, 0, 0, 0, 0, 0, 0, 9],
+				[0, 0, 0, 1, 0, 2, 0, 0, 0],
+			];
 
-		/* medium */
-		var puzzle = [ 	[0,0,0,9,0,7,0,0,0], 
-						[9,0,0,0,0,0,0,0,8], 
-						[0,3,0,4,0,5,0,2,0], 
-						[3,0,7,0,4,0,2,0,6], 
-						[0,0,0,5,0,9,0,0,0], 
-						[8,0,9,0,2,0,1,0,3], 
-						[0,7,0,6,0,4,0,3,0], 
-						[2,0,0,0,0,0,0,0,9], 
-						[0,0,0,1,0,2,0,0,0]];
-						
+			/* medium */
+			var puzzle = [
+				[0, 0, 0, 0, 2, 9, 1, 0, 0],
+				[0, 6, 9, 0, 0, 0, 0, 8, 0],
+				[7, 0, 0, 0, 5, 0, 0, 4, 0],
+				[4, 0, 0, 0, 0, 0, 0, 0, 0],
+				[0, 1, 2, 3, 0, 4, 5, 6, 0],
+				[0, 0, 0, 0, 0, 0, 0, 0, 3],
+				[0, 8, 0, 0, 7, 0, 0, 0, 1],
+				[0, 2, 0, 0, 0, 0, 3, 9, 0],
+				[0, 0, 6, 1, 8, 0, 0, 0, 0],
+			];
 
-		/* medium */
-		var puzzle = [ 	[0,0,0,0,2,9,1,0,0], 
-						[0,6,9,0,0,0,0,8,0], 
-						[7,0,0,0,5,0,0,4,0], 
-						[4,0,0,0,0,0,0,0,0], 
-						[0,1,2,3,0,4,5,6,0], 
-						[0,0,0,0,0,0,0,0,3], 
-						[0,8,0,0,7,0,0,0,1], 
-						[0,2,0,0,0,0,3,9,0], 
-						[0,0,6,1,8,0,0,0,0]];
+			//Sudoku.solve(puzzle);
 
-		
-		//Sudoku.solve(puzzle);
+			// #137 in book
+			yourPuzzle = [
+				[0, 0, 7, 0, 0, 0, 9, 0, 3],
+				[0, 8, 1, 0, 6, 0, 0, 5, 0],
+				[0, 0, 0, 2, 0, 4, 0, 0, 1],
+				[3, 7, 0, 4, 0, 0, 2, 0, 0],
+				[0, 4, 0, 0, 2, 0, 0, 3, 0],
+				[0, 0, 2, 0, 0, 7, 0, 9, 6],
+				[8, 0, 0, 6, 0, 2, 0, 0, 0],
+				[0, 9, 0, 0, 4, 0, 6, 2, 0],
+				[2, 0, 5, 0, 0, 0, 1, 0, 0],
+			];
 
-		// #137 in book
-		yourPuzzle = [[0,0,7,0,0,0,9,0,3],[0,8,1,0,6,0,0,5,0],[0,0,0,2,0,4,0,0,1],[3,7,0,4,0,0,2,0,0],[0,4,0,0,2,0,0,3,0],[0,0,2,0,0,7,0,9,6],[8,0,0,6,0,2,0,0,0],[0,9,0,0,4,0,6,2,0],[2,0,5,0,0,0,1,0,0]];
+			$(document).ready(function () {
+				$("#solvebtn").on("click", function (evt) {
+					evt.preventDefault();
+					yourPuzzle = [];
 
-		$(document).ready(function() {
-			$("#solvebtn").on("click", function(evt) {
-				evt.preventDefault();
-				yourPuzzle = [];
-
-				var boardcells = $(".board input");
-				var yourPuzzle = [[],[],[],[],[],[],[],[],[]];
-				var idx = 0;
-				$.map( boardcells, function( val, i ) {
-					idx = Math.floor(i/9);
-				    yourPuzzle[idx].push(parseInt($(val).val(), 10) || 0);
-				});
-				//console.log(yourPuzzle);
-				/*
+					var boardcells = $(".board input");
+					var yourPuzzle = [[], [], [], [], [], [], [], [], []];
+					var idx = 0;
+					$.map(boardcells, function (val, i) {
+						idx = Math.floor(i / 9);
+						yourPuzzle[idx].push(parseInt($(val).val(), 10) || 0);
+					});
+					//console.log(yourPuzzle);
+					/*
 				for (var i=0; i<9; i++) {
 					r = [];
 					$(".row" + i + " input").each(function( index ) {
@@ -372,14 +585,11 @@
 					yourPuzzle.push(r);
 				}
 				*/
-				Sudoku.solve(yourPuzzle);
+					Sudoku.solve(yourPuzzle);
+				});
 			});
 
-
-		});
-
-		//JSON.stringify(yourPuzzle)
-	
-	</script>
-</body>
+			//JSON.stringify(yourPuzzle)
+		</script>
+	</body>
 </html>
